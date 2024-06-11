@@ -1,0 +1,10 @@
+# Ignore a specific file
+AND_NN_Chars2vec_playground.ipynb
+NNAND_dataset_prep.ipynb
+pytorch_playground-v3.ipynb
+pytorch_playground.ipynb
+specter_embeddings_pipeline.ipynb
+
+
+# Ignore all files in the build/ directory
+.ipynb_checkpoints/
