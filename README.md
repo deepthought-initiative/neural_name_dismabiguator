@@ -13,27 +13,35 @@ The Neural Author Name Disambiguator (NAND) is a baseline method trained on the 
 
 The NAND model undergoes a structured training, validation, and testing process. This ensures robust performance and accurate author name disambiguation. The details of this process are documented within the scripts provided in this repository.
 
-## Usage
+## Environment Setup
+conda env create -f environment.yml
+
+## Run an Example 
 
 1. **Building Training Pairs**:
    python AND_dataset_builder.py
 
-2. **Reading Data**:
-   python AND_readdata_exp.py
+The embeddings must be output and included to build the pairs (e.g., the transformers library can be used to output embeddings). 
 
-3. **Training the Model**:
-   python experiment.py
+2. **Training the Model**:
+   python experiment.py 
 
-4. **Evaluating the Model**:
+Which includes the AND_nn_exp.py and AND_readdata_exp.py to run an experiment. 
+
+3. **Evaluating the Model**:
    python results.py
+
+The checkpoint files must be updated for different experiments. 
+
+Each of the files must be updated for the different representation method used for outputting embeddings. 
 
 ## Model Architecture
 
-The NAND model uses a combination of specter and chars2vec for effective author name disambiguation.
+The AND_nn_exp.py file contains the architecture utilzied for the Specter and chars2vec embeddings. 
 
 ## Hyperparameters
 
-Hyperparameters for training can be adjusted in the corresponding script files. The current setup displays the specter + chars2vec model architecture.
+Hyperparameters for training can be adjusted in the corresponding script files. The current setup displays the Specter and chars2vec model architecture.
 
 ## Evaluation
 
@@ -46,4 +54,13 @@ The LSPO dataset is crucial for training the NAND model. You can access the data
 ---
 
 For more detailed information, please refer to the individual script files and their inline documentation.
+
+License
+-------
+
+This project is Copyright (c) DeepThought Initiative and licensed under
+the terms of the BSD 3-Clause license. This package is based upon
+the `Astropy package template <https://github.com/astropy/package-template>`_
+which is licensed under the BSD 3-clause license. See the licenses folder for
+more information.
 
