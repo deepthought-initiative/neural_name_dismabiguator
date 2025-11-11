@@ -1,86 +1,89 @@
-# Import necessary modules and functions
-from AND_nn_exp import ANDismabiguator  # Import the ANDismabiguator model
-from AND_readdata_exp import (
-    PairsANDDataModule2,
-)  # Import the data module for loading pairs data
-from lightning.pytorch import (
-    seed_everything,
-)  # Function to set seed for reproducibility
-from pytorch_lightning.loggers import (
-    CSVLogger,
-)  # CSV logger for logging training metrics
-import pytorch_lightning as pl  # Import PyTorch Lightning
-from pytorch_lightning.callbacks import (
-    ModelCheckpoint,
-)  # Callback for saving model checkpoints
-import sys  # Module for accessing system-specific parameters and functions
-from dataclasses import (
-    dataclass,
-)  # Dataclass decorator for creating configuration classes
+from AND_nn_exp2 import ANDismabiguator                  # Import model class
+from AND_readdata_exp2 import PairsANDDataModule         # Import custom DataModule for loading data
+from lightning.pytorch import seed_everything
+from pytorch_lightning.loggers import CSVLogger
+import torch
+import torch.nn.functional as F
+from torch.utils.data import IterableDataset, DataLoader, TensorDataset
+import pytorch_lightning as pl
+from pytorch_lightning.loggers import CSVLogger
+import pandas as pd
+import numpy as np
+from pytorch_lightning.callbacks import ModelCheckpoint
+import sys
+from pytorch_lightning.callbacks import EarlyStopping
 
-# Set the seed for reproducibility using the first command-line argument
+# Set random seed for reproducibility based on the first command-line argument
 seed_everything(int(sys.argv[1]))
 
+from dataclasses import dataclass
 
 @dataclass
 class Config:
-    """Configuration for logger"""
+    """
+    Configuration object for experiment setup.
 
-    save_dir: str = "logs/specter_chars2vec"  # Directory to save logs
+    Attributes:
+        save_dir (str): Directory where training logs and CSV outputs will be stored.
+    """
+    save_dir: str = "logs/"
 
-
-# Create a config instance
 config = Config()
 
-# Initialize the data module with specified batch and chunk sizes
-data_module = PairsANDDataModule2(batch_size=2048, chunk_size=500000)
+# Initialize the custom DataModule that handles train/val data loading
+data_module = PairsANDDataModule(batch_size=2048, seed=int(sys.argv[1]))
 
-# Set up the data module for the 'fit' stage (training)
-data_module.setup(stage="fit")
-# Get the training data loader
+# Prepare dataloaders
+data_module.setup(stage='fit')
 train_loader = data_module.train_dataloader()
-# Get the validation data loader
 val_loader = data_module.val_dataloader()
 
-
 def run_experiment(number):
-    """Run the experiment with a given number (for naming/logging purposes)"""
+    """
+    Runs a single training experiment using the specified run number.
 
-    # Template for checkpoint filenames
-    filename_template = f"{number}_specter_chars2vec_" + "{epoch}-{val_loss:.2f}"
+    Args:
+        number (int): Identifier for the experiment run; used to label checkpoints and logs.
+    """
+    # File naming format for checkpoints
+    filename_template = f"{number}_specter_chars2vec" + "{epoch}-{val_loss:.2f}"
 
-    # Create a checkpoint callback to save model checkpoints
+    # Callback: Saves model checkpoints during training
     checkpoint_callback = ModelCheckpoint(
-        monitor="val_loss",  # Monitor the validation loss
-        mode="min",  # Save checkpoints with the minimum validation loss
-        save_weights_only=True,  # Save only the model weights
-        dirpath="/mnt/home/amadovic/neural_author_disambiguator/hyperparametertuning/specter_chars2vec",  # Directory to save checkpoints
-        filename=filename_template,  # Template for checkpoint filenames
-        save_last=True,  # Save the last checkpoint
-        every_n_epochs=1,  # Save checkpoint after every epoch
+        monitor="val_loss",                        # Monitors validation loss to determine the best model
+        mode="min",
+        save_weights_only=True,
+        dirpath='/specter_chars2vec',
+        filename=filename_template,
+        save_last=True,                            # Also save the last epoch checkpoint
+        every_n_epochs=1
     )
 
-    # Create a PyTorch Lightning trainer
+    # Callback: Stops training if validation loss doesn’t improve for 25 epochs
+    early_stopping = EarlyStopping(
+        monitor="val_loss",
+        mode="min",
+        patience=25,
+        verbose=True
+    )
+
+    # PyTorch Lightning trainer setup
     trainer = pl.Trainer(
-        accelerator="gpu",  # Use GPU for training
-        devices=1,  # Number of GPUs to use
-        max_epochs=30,  # Maximum number of epochs to train
-        logger=CSVLogger(
-            save_dir=config.save_dir,  # Directory to save logs
-            name=f"{number}_specter_chars2vec.log",  # Log file name
-        ),
-        enable_checkpointing=True,  # Enable checkpointing
-        callbacks=[checkpoint_callback],  # Add the checkpoint callback
+        accelerator='gpu',                         # Train on GPU
+        devices=1,
+        max_epochs=250,
+        logger=CSVLogger(save_dir=config.save_dir, name=f"{number}_specter_chars2vec.log"),  # Save training logs to CSV
+        enable_checkpointing=True,
+        callbacks=[checkpoint_callback, early_stopping]
     )
 
-    # Initialize the model with the given run number
+    # Initialize model with run number (used for saving best thresholds)
     model = ANDismabiguator(run_num=int(sys.argv[1]))
 
-    # Fit the model using the trainer
+    # Start training
     trainer.fit(model, train_loader, val_loader)
+    
 
-
-# Main entry point of the script
+# Run the experiment when executed via command line
 if __name__ == "__main__":
-    # Run the experiment with the run number provided as the first command-line argument
     run_experiment(int(sys.argv[1]))

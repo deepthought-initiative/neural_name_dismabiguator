@@ -40,7 +40,7 @@ def evaluate_checkpoint(checkpoint_path, data_module):
 
     # Construct the path to the NumPy file containing thresholds for the specific run
     threshold_file_path = os.path.join(
-        f"/mnt/home/amadovic/neural_author_disambiguator/hyperparametertuning/specter_chars2vec/{number}.npy"
+        f"/specter_chars2vec/{number}.npy"
     )
 
     # Check if the NumPy file exists
@@ -103,11 +103,11 @@ def evaluate_checkpoint(checkpoint_path, data_module):
 
 # List of checkpoint paths to evaluate
 checkpoint_paths = [
-    "/mnt/home/amadovic/neural_author_disambiguator/hyperparametertuning/specter_chars2vec/1_specter_chars2vec_epoch=29-val_loss=0.02.ckpt",
-    "/mnt/home/amadovic/neural_author_disambiguator/hyperparametertuning/specter_chars2vec/2_specter_chars2vec_epoch=29-val_loss=0.02.ckpt",
-    "/mnt/home/amadovic/neural_author_disambiguator/hyperparametertuning/specter_chars2vec/3_specter_chars2vec_epoch=29-val_loss=0.02.ckpt",
-    "/mnt/home/amadovic/neural_author_disambiguator/hyperparametertuning/specter_chars2vec/4_specter_chars2vec_epoch=29-val_loss=0.02.ckpt",
-    "/mnt/home/amadovic/neural_author_disambiguator/hyperparametertuning/specter_chars2vec/5_specter_chars2vec_epoch=29-val_loss=0.02.ckpt",
+    "/specter_chars2vec/1_specter_chars2vec_epoch=29-val_loss=0.02.ckpt",
+    "/specter_chars2vec/2_specter_chars2vec_epoch=29-val_loss=0.02.ckpt",
+    "/specter_chars2vec/3_specter_chars2vec_epoch=29-val_loss=0.02.ckpt",
+    "/specter_chars2vec/4_specter_chars2vec_epoch=29-val_loss=0.02.ckpt",
+    "/specter_chars2vec/5_specter_chars2vec_epoch=29-val_loss=0.02.ckpt",
     # Add more checkpoint paths as needed
 ]
 
